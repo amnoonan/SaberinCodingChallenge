@@ -5,10 +5,25 @@
 
 @code {
     private List<Song> songs;
+    private Modal songModal = default!;
+    private Song songSelected;
 
     protected override async Task OnInitializedAsync()
     {
         songs = await Http.GetFromJsonAsync<List<Song>>("api/songs");
+    }
+
+    private async Task ShowSongDetailsModal(Song song)
+    {
+        songSelected = song;
+        await songModal.ShowAsync();
+    }
+
+    private IconName GetStarValue(int starNum)
+    {
+        if (starNum < songSelected.AvgRating) return IconName.StarFill;
+        if (starNum > songSelected.AvgRating && starNum <= songSelected.AvgRating + 0.5) return IconName.StarHalf;
+        else return IconName.Star;
     }
 }
 
@@ -19,7 +34,7 @@
         {
             @foreach (var song in songs)
             {
-                <div class="glass p-6 border border-gray-300 rounded-lg text-white transition-transform transform hover:scale-105 hover:shadow-xl cursor-pointer">
+                <div class="glass p-6 border border-gray-300 rounded-lg text-white transition-transform transform hover:scale-105 hover:shadow-xl cursor-pointer" @onclick="@(e => ShowSongDetailsModal(@song))"   >
                     <h3 class="text-xl font-semibold mb-2">@song.Title</h3>
                     <p class="text-md">Artist: <span class="font-light">@song.Artist</span></p>
                     <p class="text-md">Release Date: <span class="font-light">@song.ReleaseDate.ToString()</span></p>
@@ -32,6 +47,41 @@
             <div class="col-span-1 text-center text-gray-400">No songs found.</div>
         }
     </div>
+
+    <style>
+        .modal-style, .modal-header, .modal-content {
+            background-color: rgb(17, 24, 39);
+            color: white;
+            border: none;
+        }
+    </style>
+
+    <Modal @ref="songModal" IsVerticallyCentered="true" ModalClass="modal-style" Size="ModalSize.Large">
+            <BodyTemplate>
+                <div style="display: flex">
+				    <img src="https://www.afrocharts.com/images/song_cover.png" style="width: 200px; height: 200px; margin: 16px" />
+				    <div style="margin: 16px">
+					    <h2 class="font-semibold mb-2" >@songSelected.Title</h2>
+
+                        <div style="padding-bottom:1rem">
+						    <Icon Name=GetStarValue(1) />
+						    <Icon Name=GetStarValue(2) />
+						    <Icon Name=GetStarValue(3) />
+						    <Icon Name=GetStarValue(4) />
+						    <Icon Name=GetStarValue(5) />
+                        </div>
+                        
+
+					    <p class="text-md">Album: @songSelected.Album</p>
+					    <p class="text-md">Artist: @songSelected.Artist</p>
+					    <p class="text-md">Release Date: @songSelected.ReleaseDate</p>
+					    <p class="text-md">Genre: @songSelected.Genre</p>
+				    </div>
+                </div>
+                
+                
+            </BodyTemplate>
+    </Modal>
 </div>
 
 <style>
